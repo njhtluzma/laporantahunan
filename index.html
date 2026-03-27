@@ -186,9 +186,12 @@ section { margin-bottom: 60px; scroll-margin-top: 70px; }
 /* ── QUOTE / ALUAN ── */
 .aluan-card {
   background: white; border: 1px solid var(--border); border-radius: var(--r);
+  overflow: hidden;
+}
+.aluan-card-inner {
   padding: 40px 44px; position: relative; overflow: hidden;
 }
-.aluan-card::before {
+.aluan-card-inner::before {
   content: '';
   position: absolute; top: 0; left: 0; width: 4px; height: 100%;
   background: linear-gradient(to bottom, var(--forest), var(--gold));
@@ -209,6 +212,22 @@ section { margin-bottom: 60px; scroll-margin-top: 70px; }
 .aluan-name { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', Arial, sans-serif; font-weight: 700; letter-spacing: -0.02em; font-size: 18px; color: var(--forest); margin-bottom: 3px; }
 .aluan-title { font-size: 12px; color: var(--gold); font-weight: 600; margin-bottom: 16px; text-transform: uppercase; letter-spacing: .05em; }
 .aluan-text { font-size: 14px; color: #3a3530; line-height: 1.85; margin-bottom: 12px; }
+
+/* ── ALUAN EDITOR ── */
+.aluan-editor { padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+.aluan-editor-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.aluan-field label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.aluan-field input, .aluan-field textarea {
+  width: 100%; border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 13px; font-size: 13.5px; color: var(--ink);
+  background: var(--cream); outline: none; font-family: inherit;
+  transition: border-color .2s, background .2s;
+}
+.aluan-field input:focus, .aluan-field textarea:focus {
+  border-color: var(--forest-mid); background: white;
+}
+.aluan-field textarea { min-height: 100px; resize: vertical; line-height: 1.7; }
+.aluan-field.full { grid-column: 1 / -1; }
 
 /* ── VISI MISI ── */
 .vm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -421,6 +440,7 @@ table.tbl td.act button:hover { opacity: 1; }
   .wrap { padding: 0 16px 60px; }
   .vm-grid, .obj-grid, .stats-grid-edit, .stats-preview, .img-grid { grid-template-columns: 1fr 1fr; }
   .hero-metrics .hero-metric { min-width: 120px; }
+  .aluan-editor-row { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -429,10 +449,8 @@ table.tbl td.act button:hover { opacity: 1; }
 <!-- NAV -->
 <nav class="nav no-print">
   <a class="nav-brand" href="#">
-    <div class="nav-emblem">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
+    <div class="nav-emblem" style="background:white;padding:2px;">
+      <img src="https://lh3.googleusercontent.com/d/1gkq2KUDeSahQT9db8KgIs6HtDotaeao1" alt="MDPH Logo" style="width:30px;height:30px;object-fit:contain;display:block;">
     </div>
     <div class="nav-brand-text">
       <strong>Jabatan Kejuruteraan MDPH</strong>
@@ -463,14 +481,18 @@ table.tbl td.act button:hover { opacity: 1; }
   <div class="hero-inner">
     <div class="hero-eyebrow">
       <div class="hero-eyebrow-dot"></div>
-      Laporan Rasmi · Tahun 2025
+      Laporan Rasmi · Tahun <span class="sync-tahun">2025</span>
     </div>
     <h1>Laporan Tahunan<br><em>Jabatan Kejuruteraan</em></h1>
     <p class="hero-sub">Majlis Daerah Pengkalan Hulu (MDPH)</p>
     <div class="hero-metrics">
       <div class="hero-metric">
         <div class="hero-metric-label">Tahun</div>
-        <div class="hero-metric-val">2025</div>
+        <div class="hero-metric-val">
+          <input id="hero-tahun" type="text" value="2025" maxlength="4"
+            style="background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.3);color:white;font-family:inherit;font-weight:700;font-size:22px;width:70px;outline:none;padding:2px 0;letter-spacing:-0.02em;"
+            oninput="syncTahun(this.value)">
+        </div>
       </div>
       <div class="hero-metric">
         <div class="hero-metric-label">Jumlah Projek</div>
@@ -496,20 +518,62 @@ table.tbl td.act button:hover { opacity: 1; }
       <div class="section-number">01</div>
       <div class="section-header-text">
         <h2>Kata Aluan Ketua Jabatan</h2>
-        <p>Perutusan daripada Penolong Jurutera JA6</p>
+        <p>Perutusan daripada Ketua Jabatan Kejuruteraan</p>
       </div>
     </div>
     <div class="aluan-card">
-      <div class="aluan-quote-mark">"</div>
-      <div class="aluan-inner">
-        <div class="aluan-avatar">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <!-- Card Header with Edit button -->
+      <div class="card-header">
+        <div class="card-header-info">
+          <h3>Perutusan Ketua Jabatan</h3>
+          <p>Isi maklumat dan kata-kata aluan ketua jabatan</p>
         </div>
-        <div>
-          <div class="aluan-name">Mohamad Azizudin bin Ismail</div>
-          <div class="aluan-title">Penolong Jurutera JA6 — Ketua Jabatan Kejuruteraan</div>
-          <p class="aluan-text">Alhamdulillah, tahun 2025 menyaksikan pencapaian cemerlang Jabatan Kejuruteraan MDPH dalam membangunkan infrastruktur yang mampan dan berkualiti tinggi untuk kesejahteraan rakyat. Kami berjaya menyiapkan 47 projek pembangunan dengan jumlah perbelanjaan RM 28.5 juta.</p>
-          <p class="aluan-text">Komitmen dan dedikasi seluruh warga jabatan telah membolehkan kita mencapai kadar penyiapan projek sebanyak 94%, melebihi sasaran KPI yang ditetapkan. Saya yakin dengan semangat kerja berpasukan ini, kita mampu mencapai kecemerlangan yang lebih tinggi pada tahun 2026.</p>
+        <button class="btn-edit no-print" onclick="toggleAluanEditor()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit Data
+        </button>
+      </div>
+
+      <!-- EDITOR -->
+      <div id="aluan-editor" class="aluan-editor" style="display:none">
+        <div class="aluan-editor-row">
+          <div class="aluan-field">
+            <label>Nama Penuh</label>
+            <input type="text" id="aluan-name" placeholder="cth: Mohamad Azizudin bin Ismail" oninput="renderAluanPreview()">
+          </div>
+          <div class="aluan-field">
+            <label>Jawatan / Gelaran</label>
+            <input type="text" id="aluan-title" placeholder="cth: Penolong Jurutera JA6 — Ketua Jabatan" oninput="renderAluanPreview()">
+          </div>
+        </div>
+        <div class="aluan-field full">
+          <label>Perenggan Pertama</label>
+          <textarea id="aluan-p1" placeholder="Tulis perenggan pertama kata aluan di sini..." oninput="renderAluanPreview()"></textarea>
+        </div>
+        <div class="aluan-field full">
+          <label>Perenggan Kedua</label>
+          <textarea id="aluan-p2" placeholder="Tulis perenggan kedua kata aluan di sini..." oninput="renderAluanPreview()"></textarea>
+        </div>
+        <div class="aluan-field full">
+          <label>Perenggan Ketiga (Pilihan)</label>
+          <textarea id="aluan-p3" placeholder="Tulis perenggan ketiga jika perlu..." oninput="renderAluanPreview()"></textarea>
+        </div>
+      </div>
+
+      <!-- PREVIEW -->
+      <div id="aluan-preview" class="aluan-card-inner">
+        <div class="aluan-quote-mark">"</div>
+        <div class="aluan-inner">
+          <div class="aluan-avatar">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <div class="aluan-name" id="prev-name">Nama Ketua Jabatan</div>
+            <div class="aluan-title" id="prev-title">Jawatan / Gelaran</div>
+            <p class="aluan-text" id="prev-p1" style="color:var(--muted);font-style:italic">Klik "Edit Data" untuk mengisi kata aluan ketua jabatan.</p>
+            <p class="aluan-text" id="prev-p2" style="display:none"></p>
+            <p class="aluan-text" id="prev-p3" style="display:none"></p>
+          </div>
         </div>
       </div>
     </div>
@@ -574,9 +638,8 @@ table.tbl td.act button:hover { opacity: 1; }
         <p>Jabatan Kejuruteraan — Majlis Daerah Pengkalan Hulu</p>
       </div>
     </div>
-    <div class="org-placeholder">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="1.5"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="9.5" y="16" width="5" height="5" rx="1"/><path d="M5.5 8v4h13V8M12 12v4"/></svg>
-      <p>Muat naik gambar carta organisasi jabatan di sini.</p>
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;text-align:center;padding:24px;">
+      <img src="https://lh3.googleusercontent.com/d/1Ym5bBqmvDcw54VmuclndYcHSAaClXxqR" alt="Carta Organisasi Jabatan Kejuruteraan MDPH" style="max-width:100%;height:auto;display:block;margin:0 auto;border-radius:8px;">
     </div>
   </section>
 
@@ -585,7 +648,7 @@ table.tbl td.act button:hover { opacity: 1; }
     <div class="section-header">
       <div class="section-number">05</div>
       <div class="section-header-text">
-        <h2>Ringkasan Pencapaian 2025</h2>
+        <h2>Ringkasan Pencapaian <span class="sync-tahun">2025</span></h2>
         <p>Petunjuk prestasi utama jabatan sepanjang tahun</p>
       </div>
     </div>
@@ -615,7 +678,7 @@ table.tbl td.act button:hover { opacity: 1; }
     <div class="section-header">
       <div class="section-number">06</div>
       <div class="section-header-text">
-        <h2>Projek Utama 2025</h2>
+        <h2>Projek Utama <span class="sync-tahun">2025</span></h2>
         <p>Senarai projek pembangunan yang dilaksanakan</p>
       </div>
     </div>
@@ -655,7 +718,7 @@ table.tbl td.act button:hover { opacity: 1; }
     <div class="section-header">
       <div class="section-number">07</div>
       <div class="section-header-text">
-        <h2>Laporan Bergambar 2025</h2>
+        <h2>Laporan Bergambar <span class="sync-tahun">2025</span></h2>
         <p>Dokumentasi visual projek-projek yang dilaksanakan</p>
       </div>
     </div>
@@ -687,7 +750,7 @@ table.tbl td.act button:hover { opacity: 1; }
     <div class="section-header">
       <div class="section-number">08</div>
       <div class="section-header-text">
-        <h2>Laporan Kewangan 2025</h2>
+        <h2>Laporan Kewangan <span class="sync-tahun">2025</span></h2>
         <p>Peruntukan dan perbelanjaan mengikut kategori</p>
       </div>
     </div>
@@ -728,7 +791,7 @@ table.tbl td.act button:hover { opacity: 1; }
     <div class="section-header">
       <div class="section-number">09</div>
       <div class="section-header-text">
-        <h2>Pencapaian KPI 2025</h2>
+        <h2>Pencapaian KPI <span class="sync-tahun">2025</span></h2>
         <p>Perbandingan sasaran dan pencapaian sebenar</p>
       </div>
     </div>
@@ -761,7 +824,7 @@ table.tbl td.act button:hover { opacity: 1; }
     <div class="section-header">
       <div class="section-number">10</div>
       <div class="section-header-text">
-        <h2>Pencapaian Suku Tahunan 2025</h2>
+        <h2>Pencapaian Suku Tahunan <span class="sync-tahun">2025</span></h2>
         <p>Aktiviti dan pencapaian mengikut suku tahun</p>
       </div>
     </div>
@@ -844,12 +907,12 @@ table.tbl td.act button:hover { opacity: 1; }
 
 <!-- FOOTER -->
 <footer class="footer">
-  <div class="footer-logo">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  <div class="footer-logo" style="background:white;padding:2px;">
+    <img src="https://lh3.googleusercontent.com/d/1gkq2KUDeSahQT9db8KgIs6HtDotaeao1" alt="MDPH Logo" style="width:32px;height:32px;object-fit:contain;display:block;">
   </div>
   <h4>Jabatan Kejuruteraan MDPH</h4>
   <p>Majlis Daerah Pengkalan Hulu</p>
-  <p style="margin-top:6px">© 2025 MDPH · www.mdph.gov.my · jurutera@mdph.gov.my · 04-4778148</p>
+  <p style="margin-top:6px">© 2026 MDPH</p>
 </footer>
 
 <button id="scroll-top" title="Kembali ke atas" onclick="window.scrollTo({top:0,behavior:'smooth'})">
@@ -885,6 +948,49 @@ function toggleEditor(id){
   ed.style.display=open?"none":"";
   if(pr)pr.style.display=open?"":"none";
   if(open)toast("Perubahan disimpan ✓");
+}
+
+/* ── ALUAN EDITOR ── */
+function toggleAluanEditor(){
+  const ed=document.getElementById("aluan-editor");
+  const pr=document.getElementById("aluan-preview");
+  const open=ed.style.display!=="none";
+  ed.style.display=open?"none":"";
+  pr.style.display=open?"":"none";
+  if(open)toast("Perubahan disimpan ✓");
+}
+
+function renderAluanPreview(){
+  const name=document.getElementById("aluan-name").value.trim();
+  const title=document.getElementById("aluan-title").value.trim();
+  const p1=document.getElementById("aluan-p1").value.trim();
+  const p2=document.getElementById("aluan-p2").value.trim();
+  const p3=document.getElementById("aluan-p3").value.trim();
+
+  const prevName=document.getElementById("prev-name");
+  const prevTitle=document.getElementById("prev-title");
+  const prevP1=document.getElementById("prev-p1");
+  const prevP2=document.getElementById("prev-p2");
+  const prevP3=document.getElementById("prev-p3");
+
+  prevName.textContent=name||"Nama Ketua Jabatan";
+  prevTitle.textContent=title||"Jawatan / Gelaran";
+
+  if(p1){
+    prevP1.textContent=p1;
+    prevP1.style.fontStyle="normal";
+    prevP1.style.color="#3a3530";
+  } else {
+    prevP1.textContent='Klik "Edit Data" untuk mengisi kata aluan ketua jabatan.';
+    prevP1.style.fontStyle="italic";
+    prevP1.style.color="var(--muted)";
+  }
+
+  if(p2){prevP2.textContent=p2;prevP2.style.display="";}
+  else{prevP2.style.display="none";}
+
+  if(p3){prevP3.textContent=p3;prevP3.style.display="";}
+  else{prevP3.style.display="none";}
 }
 
 /* ── HERO PILLS ── */
@@ -1100,6 +1206,11 @@ function renderImgGrid(){
         <input value="${im.caption}" placeholder="cth: Kerja-kerja turap jalan siap Ogos 2025" oninput="imgData[${i}].caption=this.value">
       </div>
     </div>`).join("");
+}
+
+/* ── SYNC TAHUN ── */
+function syncTahun(val){
+  document.querySelectorAll(".sync-tahun").forEach(el=>el.textContent=val||"—");
 }
 
 /* ── INIT ── */
