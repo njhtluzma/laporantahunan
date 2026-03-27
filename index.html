@@ -726,7 +726,7 @@ table.tbl td.act button:hover { opacity: 1; }
       <div class="card-header">
         <div class="card-header-info">
           <h3>Galeri Projek</h3>
-          <p>Muat naik gambar dan isi tajuk serta kapsyen untuk setiap foto</p>
+          <p>Muat naik gambar dan isi tajuk serta ulasan untuk setiap foto</p>
         </div>
       </div>
       <div class="card-body">
@@ -1031,7 +1031,7 @@ function renderProjekEditor(){
       <td><select onchange="projekData[${i}].cat=this.value;renderProjekPreview()">${catOpts.map(c=>`<option${c===p.cat?" selected":""}>${c}</option>`).join("")}</select></td>
       <td><input value="${p.cost}" placeholder="cth: 1,200,000" oninput="projekData[${i}].cost=this.value;renderProjekPreview()"></td>
       <td><select onchange="projekData[${i}].quarter=this.value;renderProjekPreview()">${["S1","S2","S3","S4"].map(q=>`<option${q===p.quarter?" selected":""}>${q}</option>`).join("")}</select></td>
-      <td><select onchange="projekData[${i}].status=this.value;renderProjekPreview()"><option${p.status==="siap"?" selected":""}>siap</option><option${p.status==="sedang"?" selected":""}>sedang</option></select></td>
+      <td><select onchange="projekData[${i}].status=this.value;renderProjekPreview()"><option${p.status==="Siap"?" selected":""}>Siap</option><option${p.status==="Dalam Pelaksanaan"?" selected":""}>Dalam Pelaksanaan</option></select></td>
       <td><input type="number" min="0" max="100" value="${p.prog}" oninput="projekData[${i}].prog=+this.value;renderProjekPreview()"></td>
       <td class="act"><button onclick="delProjekRow(${i})">&#215;</button></td>
     </tr>`).join("");
@@ -1202,7 +1202,7 @@ function renderImgGrid(){
       <div class="img-meta">
         <label>Tajuk</label>
         <input class="title-inp" value="${im.tajuk}" placeholder="cth: Projek Jalan Kampung Baru" oninput="imgData[${i}].tajuk=this.value">
-        <label style="margin-top:4px">Kapsyen</label>
+        <label style="margin-top:4px">Ulasan</label>
         <input value="${im.caption}" placeholder="cth: Kerja-kerja turap jalan siap Ogos 2025" oninput="imgData[${i}].caption=this.value">
       </div>
     </div>`).join("");
